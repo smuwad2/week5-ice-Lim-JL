@@ -20,11 +20,66 @@
             
         </div>
         <div id="result">
-
+            
         </div>
         <script>
-            function getData() {
- 
+            async function getData() {
+                const type = document.getElementById("type").value
+                const limit = document.getElementById('limit').value
+                try{
+                    const response = await axios.get("/data",{
+                    params:{
+                        "type":type,
+                        "limit":limit
+
+                        }
+                    })
+                     const resType = response.data.type;
+                    const records = response.data.records;
+                    let titleType = document.createElement('h2');
+                    titleType.innerText = resType;
+                    var container = document.getElementById('result');
+                    //wipe the container first
+                    container.replaceChildren();
+                    //alt
+                    //while(container.firstChild){
+                    // container.firstChild.remove()}
+                    container.appendChild(titleType);
+                    var resTable = document.createElement('table');
+                    resTable.className = "table";
+                    var tbody = document.createElement('tbody');
+                    if(records.length > 0){
+                        
+                        //create header row
+                        let headRow = document.createElement('tr');
+                        
+                        for(key in records[0]){
+                            var tableHead = document.createElement('th');
+                            tableHead.innerText = key;
+                            
+                            headRow.appendChild(tableHead)
+                        }
+                        tbody.appendChild(headRow);
+                        //create a new row for each record
+                        for(let record of records){
+                            var row = document.createElement('tr');
+                            
+                            for(const key in record){
+                                
+                                var td = document.createElement('td');
+                                td.innerText = record[key];
+                                row.appendChild(td);
+                            }
+                            tbody.appendChild(row)
+                        }
+                        resTable.appendChild(tbody);
+                        container.appendChild(resTable);
+                    }
+                }
+                catch(error){
+                    console.log(error)
+                }
+                
             }
 
         </script>

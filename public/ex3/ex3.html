@@ -33,32 +33,99 @@
     </div>
     
     <script>
-        function getCategories() {
+        async function getCategories() {
             // Fetch categories from the server using Axios
             // and display them in the select element
             // url: http://localhost:3010/categories
+            const response = await axios.get("/categories")
+            const categories = response.data;
+            //store it here so i can access it in showitems
+            window.globalData = categories;
+            showCategories(categories)
 
         }
 
         function showCategories(categories) {
             // Display the categories in the select element
+            var select = document.getElementById('selectCategory');
+            for(const cat of categories){
+                var option = document.createElement('option');
+                option.innerText = cat;
+                option.value = cat;
+                select.appendChild(option);
+            }
             
         }
 
-        function getItems() {
+        async function getItems() {
             // Fetch items based on the selected category
             // If "To select" is chosen, do nothing
             // If "All" is chosen, fetch all items
             // If a specific category is chosen, fetch items for that category
             // url: http://localhost:3010/items?category=categoryName
+            var sel = document.getElementById('selectCategory')
             
+            if(sel.value == "all"){
+                var datax = []
+                for(i = 0;i<sel.options.length;i++){
+                    if(sel.options[i].value != 0 && sel.options[i].value != 'all'){
+                        const res = await axios.get('/items',{"params":{"category":sel.options[i].value}})
+                        
+                        datax = datax.concat(res.data);
+                        
+                    }
+                }
+                
+                showItems(datax);
+                
+            }
+            else{
+                
+                const res = await axios.get('/items',{"params":{"category":sel.value}})
+                const data = res.data;
+                showItems(data);
+            }
+            
+            
+            
+
         }
 
         function showItems(items) {
             // Display the items in the itemsList div
             // Each item should be displayed in a bootstrap card format
             // The display should be responsive 3 columns on large screens, 2 columns on medium screens, and 1 column on small screens
-            
+            var itemsList = document.getElementById("itemsList");
+            while(itemsList.firstChild){
+                if(itemsList.firstChild.tagName !="p"){
+
+                    itemsList.firstChild.remove();
+                }
+            }
+            if(items.length > 0 ){
+                
+                for(const item of items){
+                    var parentdiv = document.createElement('div');
+                    parentdiv.className = "col-4"
+                    var card = document.createElement('div');
+                    card.className="card text-center w-50 mx-auto my-1";
+                    var name = document.createElement('h5');
+                    name.innerText = item['name'];
+                    var price = document.createElement('p');
+                    price.innerText = "Price: $" + Number.parseFloat(item['price']).toFixed(2)
+                    card.appendChild(name);
+                    card.appendChild(price);
+                    parentdiv.append(card)
+                    itemsList.appendChild(parentdiv);
+                }
+            }
+            else{
+                var p = document.createElement('p');
+
+                p.innerText = "No items"
+                p.className="text-center"
+                itemsList.appendChild(p);
+            }
 
         }
 
